@@ -2,6 +2,7 @@ var neo4j = require('neo4j');
 var txtwiki = require('../txtwiki.js/txtwiki.js');
 var xml = require('xml-object-stream');
 var fs = require('fs');
+var wpage = require('./wikiPage.js');
 
 var readStream = fs.createReadStream('./data/enwiki-latest-pages-articles.xml');
 var parser = xml.parse(readStream);
@@ -9,6 +10,8 @@ var parser = xml.parse(readStream);
 var i = 0;
 var start = (new Date).getTime();
 var diff = 0;
+
+var db = new neo4j.GraphDatabase('http://localhost:7474');
 
 parser.each('page',function (page) {
 	
@@ -22,7 +25,14 @@ parser.each('page',function (page) {
 			parser.pause();
 		}*/
 		
+		var p = new wpage.wikiPage(db,page.title.$text);
+		p.setVerified(true);
+		
+		txtwiki.on("link",p.addLink);
 		txtwiki.parseWikitext(page.revision.text.$text);
+		txtwiki.off("link",p.addLink);
+		
+		p.save();
 	}
 	
 	if (i%2000 == 0 && i != 0) {
@@ -42,14 +52,3 @@ parser.each('page',function (page) {
 	
 	i++;
 });
-
-/*
-var db = new neo4j.GraphDatabase('http://localhost:7474');
-var node = db.createNode({hello: 'world'});     // instantaneous, but...
-node.save(function (err, node) {    // ...this is what actually persists.
-    if (err) {
-        console.err('Error saving new node to database:', err);
-    } else {
-        console.log('Node saved to database with id:', node.id);
-    }
-});*/
