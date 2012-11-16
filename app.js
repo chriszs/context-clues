@@ -10,11 +10,12 @@ var parser = xml.parse(readStream);
 var i = 0;
 var start = (new Date).getTime();
 var diff = 0;
+var paused = false;
+var done = false;
 
 var db = new neo4j.GraphDatabase('http://localhost:7474');
 
-parser.each('page',function (page) {
-	
+var processPage = function (page) {
 	if (page.ns.$text == "0") {
 		
 		// console.log(page.title.$text);
@@ -26,13 +27,19 @@ parser.each('page',function (page) {
 		}*/
 		
 		var p = new wpage.wikiPage(db,page.title.$text);
+		
 		p.setVerified(true);
 		
 		txtwiki.on("link",p.addLink);
 		txtwiki.parseWikitext(page.revision.text.$text);
 		txtwiki.off("link",p.addLink);
 		
-		p.save();
+		p.queue();
+		
+		if (!paused && wpage.getWorking() >= 15) {
+			parser.pause();
+			paused = true;
+		}
 	}
 	
 	if (i%2000 == 0 && i != 0) {
@@ -45,10 +52,34 @@ parser.each('page',function (page) {
 				percent = Math.round((times[func]/diff)*100);
 			console.log(func+"() took "+times[func]+"ms ("+percent+"%)");
 		}
-		console.log("4 million articles in "+(Math.round(((((4000000/i)*(diff/1000))/60)/60)*100)/100)+" hours");
+		console.log("estimated time remaining: "+(Math.round((((((((4000000-i)/i)*(diff))-diff)/1000)/60)/60)*100)/100)+" hours");
 		// txtwiki.resetTimes();
 		// start = (new Date).getTime();
 	}
 	
 	i++;
+}
+
+parser.each('page',processPage);
+
+wpage.on("processed",function (p) {
+	if (paused && wpage.getWorking() < 10) {
+		parser.resume();
+		paused = false;
+	}
+});
+
+parser.on("error",function (err) {
+	done = true;
+	console.log("parse error"+err);
+});
+
+parser.on("close",function () {
+	done = true;
+	console.log("stream closed");
+});
+
+parser.on("end",function () {
+	done = true;
+	console.log("stream ended");
 });
