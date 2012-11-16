@@ -1,0 +1,7 @@
+todo:
+- strip # from links
+- normalize capitalization
+- record redirects/disambiguation pages
+- optimize performance/figure out why it hangs
+- create some way to view
+- figure out impact of ()
