@@ -3,7 +3,7 @@ var txtwiki = require('../txtwiki.js/txtwiki.js');
 var xml = require('xml-object-stream');
 var fs = require('fs');
 var wpage = require('./wikiPage.js');
-var server = require('./viewer/server.js');
+// var server = require('./viewer/server.js');
 
 var readStream = fs.createReadStream('./data/enwiki-latest-pages-articles.xml');
 var parser = xml.parse(readStream);
@@ -14,7 +14,7 @@ var diff = 0;
 var paused = false;
 var done = false;
 
-var s = new server.init(wpage);
+// var s = new server.init(wpage);
 
 var db = new neo4j.GraphDatabase('http://localhost:7474');
 
@@ -39,22 +39,25 @@ var processPage = function (page) {
 		
 		p.queue();
 		
-		if (!paused && wpage.getWorking() >= 15) {
+		if (!paused && wpage.getWorking() >= 300) {
 			parser.pause();
 			paused = true;
 		}
 	}
+	else {
+		// console.log("ignoring "+page.title.$text);
+	}
 	
-	if (i%2000 == 0 && i != 0) {
+	if (i%500 == 0 && i != 0) {
 		diff = (new Date).getTime() - start;
 		console.log("\nprocessed "+i+" articles in "+diff+"ms");
-		var times = txtwiki.getTimes();
+	/*	var times = txtwiki.getTimes();
 		for (func in times) {
 			var percent = 0;
 			if (times[func] > 0)
 				percent = Math.round((times[func]/diff)*100);
 			console.log(func+"() took "+times[func]+"ms ("+percent+"%)");
-		}
+		}*/
 		console.log("estimated time remaining: "+(Math.round((((((((4000000-i)/i)*(diff))-diff)/1000)/60)/60)*100)/100)+" hours");
 		// txtwiki.resetTimes();
 		// start = (new Date).getTime();
@@ -66,7 +69,7 @@ var processPage = function (page) {
 parser.each('page',processPage);
 
 wpage.on("processed",function (p) {
-	if (paused && wpage.getWorking() < 10) {
+	if (paused && wpage.getWorking() < 250) {
 		parser.resume();
 		paused = false;
 	}

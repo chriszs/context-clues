@@ -45,7 +45,8 @@ exports.wikiPage = function (db,title) {
 	this.addLink = function (page,text) {
 		var parts = page.split(":");
 		if (parts.length == 1 ) {
-			var p = new exports.wikiPage(db,page);
+			parts = page.split("#");
+			var p = new exports.wikiPage(db,parts[0]);
 			links.push(p);
 		}
 	}
@@ -78,11 +79,18 @@ exports.wikiPage = function (db,title) {
 			n.save(me.nodeSaved);
 		}
 		else {
+			// console.log("found "+title);
 			emitter.emit("nodeAdded",n);
 			node = n;
 			callback(n);
-			me.saveLinks();
-			me.updateNode();
+			if (verified && !node.data.verified) {
+				me.saveLinks();
+				me.updateNode();
+			}
+			else {
+			//	console.log("links not added "+title);
+				emitter.emit("processed",me);
+			}
 		}
 	}
 	
@@ -91,7 +99,7 @@ exports.wikiPage = function (db,title) {
 			console.log("problem saving node:" + err);
 		}
 		else {
-			// console.log("created "+n.data.title);
+			// console.log("created "+title);
 			emitter.emit("nodeAdded",n);
 			node = n;
 			n.index("pages","title",title,me.nodeIndexed);
@@ -114,6 +122,7 @@ exports.wikiPage = function (db,title) {
 			links[i].save(me.saveRelation);
 		}
 		if (links.length == 0) {
+			// console.log("no links to add "+title);
 			emitter.emit("processed",me);
 		}
 	}
@@ -127,18 +136,19 @@ exports.wikiPage = function (db,title) {
 			console.log("problem saving relation:"+err);
 		}
 		else {
-			// console.log(r.start.data.title + "->" + r.end.data.title);
+			// console.log("added "+r.start.data.title + "->" + r.end.data.title);
 			emitter.emit("relationshipAdded",r);
 		}
 		relationsLeft--;
 		if (relationsLeft == 0) {
+			// console.log("links added "+title);
 			emitter.emit("processed",me);
 		}
 	}
 	
 	this.updateNode = function () {
 		if (verified && !node.data.verified) {
-			node.data.verified = true;
+			node.data.verified = verified;
 			node.save(me.nodeUpdated);
 		}
 	}
