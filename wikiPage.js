@@ -1,9 +1,7 @@
 var events = require("events");
 
 var emitter = new events.EventEmitter();
-
 var queue = new Array();
-
 var currentp = null;
 
 exports.getWorking = function () {
@@ -80,6 +78,7 @@ exports.wikiPage = function (db,title) {
 			n.save(me.nodeSaved);
 		}
 		else {
+			emitter.emit("nodeAdded",n);
 			node = n;
 			callback(n);
 			me.saveLinks();
@@ -92,7 +91,8 @@ exports.wikiPage = function (db,title) {
 			console.log("problem saving node:" + err);
 		}
 		else {
-			console.log("created "+n.data.title);
+			// console.log("created "+n.data.title);
+			emitter.emit("nodeAdded",n);
 			node = n;
 			n.index("pages","title",title,me.nodeIndexed);
 		}
@@ -127,7 +127,8 @@ exports.wikiPage = function (db,title) {
 			console.log("problem saving relation:"+err);
 		}
 		else {
-			console.log(r.start.data.title + "->" + r.end.data.title);
+			// console.log(r.start.data.title + "->" + r.end.data.title);
+			emitter.emit("relationshipAdded",r);
 		}
 		relationsLeft--;
 		if (relationsLeft == 0) {

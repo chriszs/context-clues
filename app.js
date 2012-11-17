@@ -3,6 +3,7 @@ var txtwiki = require('../txtwiki.js/txtwiki.js');
 var xml = require('xml-object-stream');
 var fs = require('fs');
 var wpage = require('./wikiPage.js');
+var server = require('./viewer/server.js');
 
 var readStream = fs.createReadStream('./data/enwiki-latest-pages-articles.xml');
 var parser = xml.parse(readStream);
@@ -12,6 +13,8 @@ var start = (new Date).getTime();
 var diff = 0;
 var paused = false;
 var done = false;
+
+var s = new server.init(wpage);
 
 var db = new neo4j.GraphDatabase('http://localhost:7474');
 
