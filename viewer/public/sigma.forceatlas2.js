@@ -221,7 +221,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
           if (!fixed && n.fa2) {
             var swinging = Math.sqrt(Math.pow(n.fa2.old_dx - n.fa2.dx, 2) +
                            Math.pow(n.fa2.old_dy - n.fa2.dy, 2));
-
+						   
             // If the node has a burst change of direction,
             // then it's not converging.
             totalSwinging += n.fa2.mass * swinging;
@@ -231,6 +231,8 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
                                         Math.pow(n.fa2.old_dx + n.fa2.dx, 2) +
                                         Math.pow(n.fa2.old_dy + n.fa2.dy, 2)
                                       );
+									  
+			
           }
         });
 
@@ -279,8 +281,8 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
                 (n.fa2.old_dy - n.fa2.dy) *
                 (n.fa2.old_dy - n.fa2.dy)
               );
-              var factor = 0.1 * speed / (1 + speed * Math.sqrt(swinging));
-
+              var factor = 0.1 * speed / (1 + speed * swinging * n.fa2.mass * 1.5 );
+			  
               var df = Math.sqrt(Math.pow(n.fa2.dx, 2) +
                        Math.pow(n.fa2.dy, 2));
 
@@ -304,10 +306,13 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
                 (n.fa2.old_dy - n.fa2.dy) *
                 (n.fa2.old_dy - n.fa2.dy)
               );
-              var factor = speed / (1 + speed * Math.sqrt(swinging));
-
+              var factor = speed / (1 + speed * Math.sqrt(swinging) * n.fa2.mass * 1.5);
+			  
               n.x += n.fa2.dx * factor;
               n.y += n.fa2.dy * factor;
+			  
+				  
+
             }
           }
         }
@@ -374,11 +379,13 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
   // All the different forces
   this.ForceFactory = {
     buildRepulsion: function(adjustBySize, coefficient) {
+		/*
       if (adjustBySize) {
         return new this.linRepulsion_antiCollision(coefficient);
       } else {
         return new this.linRepulsion(coefficient);
-      }
+      }*/
+       return new this.linRepulsion(coefficient);
     },
 
     getStrongGravity: function(coefficient) {

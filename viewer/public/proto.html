@@ -1,0 +1,114 @@
+<html>
+	<head>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/protovis.js"></script>
+		
+		<link rel="stylesheet" type="text/css" href="/style.css" />
+	</head>
+	<body>
+		
+		<script type="text/javascript+protovis">
+		
+		var socket = io.connect('http://localhost');
+				
+		var pagenodes = new Array();
+		var nodeindexesbyid = new Array();
+		var pagelinks = new Array();
+		
+		function getNodes() {
+			return pagenodes;
+		}
+		
+		function getLinks() {
+			return pagelinks;
+		}
+		
+		var i = 0;
+		var maxNodes = 800;
+		
+		function getOrCreateNode(n) {
+			if (nodeindexesbyid[n.id] == undefined) {
+		
+				var node = {
+					'nodeName': n.title,
+					'group': n.group
+				}
+				
+				pagenodes.push(node);
+				nodeindexesbyid[n.id] = i;
+				
+			//	console.log("created "+i);
+			//	console.log(node);
+				
+				i++;
+				
+				return (i-1);
+			}
+			else {
+			//	console.log("got "+nodeindexesbyid[n.id]);
+				return nodeindexesbyid[n.id];
+			}
+
+		}
+		
+		socket.on('relationshipAdded', function (r) {
+			if (i <= maxNodes) {
+				var link = {
+					'source': getOrCreateNode(r.start,r.start.id),
+					'target': getOrCreateNode(r.end,r.end.id),
+					'value':100
+				}
+				
+			//	console.log(link);
+				
+				pagelinks.push(link);
+				
+				// force.reset();
+				
+				clearTimeout(timer);
+				timer = setTimeout(init,1000);
+			}
+		});
+
+		var w = document.body.clientWidth,
+			h = document.body.clientHeight,
+			colors = pv.Colors.category19();
+
+		var vis = new pv.Panel()
+			.width(w)
+			.height(h)
+			.fillStyle("white")
+			.event("mousedown", pv.Behavior.pan())
+			.event("mousewheel", pv.Behavior.zoom());
+
+		var force = vis.add(pv.Layout.Force)
+			.nodes(getNodes)
+			.links(getLinks);
+			
+		force.link.add(pv.Line)
+			.lineWidth(2);
+
+		force.node.add(pv.Dot)
+			.size(8)
+			.fillStyle(function(d) d.fix ? "brown" : colors(d.group))
+			.strokeStyle(function() this.fillStyle().darker())
+			.lineWidth(1)
+			.title(function(d) d.nodeName)
+			.event("mousedown", pv.Behavior.drag())
+			.event("drag", force);
+
+		// vis.render();
+		
+		function init() {
+			force.reset();
+			vis.render();
+		}
+		
+		socket.emit('setTitle',{'title':'Abraham Lincoln'});
+		
+		var timer = setTimeout(init,1000);
+			
+		</script>
+		
+	</body>
+</html>

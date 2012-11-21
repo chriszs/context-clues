@@ -1,6 +1,11 @@
 
-#graph {
-	width:800px;
-	height:800px;
+body, html {
+	padding:0px;
+	margin:0px;
 	background-color:black
+}
+
+#graph {
+	width:1000px;
+	height:900px
 }

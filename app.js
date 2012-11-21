@@ -47,7 +47,7 @@ var processPage = function (page) {
 	else {
 		// console.log("ignoring "+page.title.$text);
 	}
-	
+	/*
 	if (i%500 == 0 && i != 0) {
 		diff = (new Date).getTime() - start;
 		console.log("\nprocessed "+i+" articles in "+diff+"ms");
@@ -58,12 +58,12 @@ var processPage = function (page) {
 				percent = Math.round((times[func]/diff)*100);
 			console.log(func+"() took "+times[func]+"ms ("+percent+"%)");
 		}*/
-		console.log("estimated time remaining: "+(Math.round((((((((4000000-i)/i)*(diff))-diff)/1000)/60)/60)*100)/100)+" hours");
+	//	console.log("estimated time remaining: "+(Math.round((((((((4000000-i)/i)*(diff))-diff)/1000)/60)/60)*100)/100)+" hours");
 		// txtwiki.resetTimes();
 		// start = (new Date).getTime();
-	}
+	// }
 	
-	i++;
+	// i++;
 }
 
 parser.each('page',processPage);
