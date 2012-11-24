@@ -1,8 +1,19 @@
 todo:
-- normalize capitalization
+==parser==
+- normalize capitalization/underscores
 - record redirects
 - optimize performance/figure out why it hangs
-- create some way to view
 - categories
 - add more properties
 - make fully stoppable/resumable
+- autoindex?
+- improve model
+
+==viewer==
+- solve new graph problem
+- make stuff clickable
+- figure out scaling
+
+==recognizer==
+- write prototype spotter
+- write prototype disambiguator
